@@ -1,0 +1,10 @@
+######### The Movie DB API #########
+https://api.themoviedb.org/3/
+api_key: df1a34ae3c1705433378bc967b244227
+
+
+######### Foursquare API #########
+https://api.foursquare.com/v2/
+client_id: QJKKM3AWZP0R1GYQXOPDOXXDAH4M43R5Z0TJ2AWY4EQR4UVZ
+client_secret: IPX1CYTP32FG0A5NWQKAMIKQPUDDI3KVL103YA04OX5JCV1M
+v: yyyymmdd
