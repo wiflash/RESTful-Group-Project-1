@@ -8,7 +8,9 @@ api = Api(blueprint_rekomendasi)
 class RekomendasiResource(Resource):
     geocode_host = 'https://geocode.xyz'
     foursquare_host = 'https://api.foursquare.com/v2/venues/search'
-    tmdb_host = 'https://api.themoviedb.org/3/'
+    #hos & api_key tmdb
+    host = 'https://api.themoviedb.org/3'
+    api_key = 'df1a34ae3c1705433378bc967b244227'
 
     def get(self):
         parser = reqparse.RequestParser()
@@ -17,6 +19,30 @@ class RekomendasiResource(Resource):
         args = parser.parse_args()
 
         #request api tmdb
+        rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key})
+
+        movie = rq.json()
+        movie = movie['results']
+        movies = []
+        for i in movie:
+            rq2 = requests.get(self.host + '/movie/' + str(i['id']), params={'api_key':self.api_key})
+            movie2 = rq2.json()
+            nama_genre=[]
+            genre = movie2['genres']
+            for j in genre:
+                nama_genre.append(j['name'])
+            
+            hasil = {
+                'movie_id': i['id'],
+                'judul': i['title'],
+                'sinopsis': i['overview'],
+                'genres': nama_genre,
+                'tanggal_rilis': i['release_date'],
+                'durasi': movie2['runtime'],
+                'rating': i['vote_average']
+            }
+            if args['genre'] in hasil['genres']:
+                movies.append(hasil)
 
         #request api geolocode.xyz
         rq = requests.get(self.geocode_host, params={
@@ -49,9 +75,9 @@ class RekomendasiResource(Resource):
             listfs.append(place)
 
         return {
+            'rekomendasi film': movies,
             'rekomendasi tempat nonton': listfs
         }
 
-        # return fsrq
 
 api.add_resource(RekomendasiResource,'')
