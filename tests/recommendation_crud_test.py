@@ -37,18 +37,31 @@ class TestRecommendationCrud():
             elif args[0] == "https://api.themoviedb.org/3/movie/181812":
                 return MockResponse({
                     "genres": [
-                        {"name":"Action"},
+                        {"name":"Drama"},
                         {"name":"Adventure"},
                         {"name":"Science Fiction"}
                     ],
                     "runtime": 142
                 }, 200)
             elif args[0] == "https://geocode.xyz":
+                if kwargs["params"]["scantext"] == 'bojongsoang':
+                    matches=None; longt="123456"; latt="123456"
+                elif kwargs['params']['scantext'] == 'papua':
+                    matches=1; longt="0"; latt="0"
+                else:
+                    matches=1; longt="123456"; latt="123456"
                 return MockResponse({
-                    "longt":"123456",
-                    "latt":"123456"
-                })
+                    "longt":longt,
+                    "latt":latt,
+                    "matches":matches
+                }, 200)
             elif args[0] == "https://api.foursquare.com/v2/venues/search":
+                if kwargs['params']['ll'] == '0,0':
+                    return MockResponse({
+                        "response":{
+                            "venues":[]
+                        }
+                    }, 404)
                 return MockResponse({
                     "response":{
                         "venues":[
@@ -61,14 +74,14 @@ class TestRecommendationCrud():
                             }
                         ]
                     }
-                })
+                }, 200)
         return MockResponse(None, 404)
     
     @mock.patch('requests.get', side_effect = mocked_requests_get)
-    def test_get_rec(self, user):
+    def test_get_rec(self, test_reqget_mock, user):
         token = create_token(False)
 
-        #case1: post valid
+        #case1: get valid
         data = {
             "genre":"Drama",
             "lokasi":"malang,ID"
@@ -80,3 +93,39 @@ class TestRecommendationCrud():
 
         assert res.status_code == 200
 
+        #case2: location unknown
+        data = {
+            "genre":"Drama",
+            "lokasi":"bojongsoang"
+        }
+
+        res = user.get('/rekomendasi', query_string=data,
+            headers={'Authorization':'Bearer '+token}
+        )
+
+        assert res.status_code == 404
+
+        #case3: movie not available
+        data = {
+            "genre":"Action",
+            "lokasi":"malang,ID"
+        }
+
+        res = user.get('/rekomendasi', query_string=data,
+            headers={'Authorization':'Bearer '+token}
+        )
+
+        assert res.status_code == 404
+
+
+        #case4: theater not available
+        data = {
+            "genre":"Drama",
+            "lokasi":"papua"
+        }
+
+        res = user.get('/rekomendasi', query_string=data,
+            headers={'Authorization':'Bearer '+token}
+        )
+
+        assert res.status_code == 404

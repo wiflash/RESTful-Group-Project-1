@@ -83,9 +83,9 @@ class RekomendasiResource(Resource):
         
         if (movies == []) or (listfs == []):
             if movies == []:
-                return {'message': 'Sorry, movie with genre '+args['genre']+' not available now'}, 200
+                return {'message': 'Sorry, movie with genre '+args['genre']+' not available now'}, 404
             else:
-                return {'message': "Sorry, there's no movie theater recommendation near your area"}, 200
+                return {'message': "Sorry, there's no movie theater recommendation near your area"}, 404
         else:
             return {
                 'rekomendasi film': movies,
