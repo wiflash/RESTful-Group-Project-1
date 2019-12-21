@@ -16,6 +16,15 @@ class TestUserRUD():
         assert res.status_code == 200
     
     # PUT METHOD
+    def test_user_put(self, user):
+        token = create_token(is_admin=False)
+        data = {"username": "user1 (edited)", "password": "W@wew123"}
+        res = user.put("/user", json=data, headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 200
+        assert res_json["username"] == data["username"]
+        assert res_json["password"] == hashlib.md5(data["password"].encode()).hexdigest()
     def test_user_put_invalid_username(self, user):
         token = create_token(is_admin=False)
         data = {"username": "user2", "password": "W@wew123"}

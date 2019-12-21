@@ -91,62 +91,69 @@ class TestAdminCRUD():
         assert res_json["message"] == "ID is not found"
     
     # PUT METHOD
-    def test_admin_put(self, user):
+    def test_admin_put_by_user_id(self, user):
         token = create_token(is_admin=True)
-        data = {"username": "user1 (edited)", "password": "W@wew123", "status":True}
-        res = user.put("/admin/1", json=data, headers={"Authorization": "Bearer "+token})
+        data = {"username": "user2 (edited)", "password": "W@wew123", "status":True}
+        res = user.put("/admin/2", json=data, headers={"Authorization": "Bearer "+token})
         res_json = json.loads(res.data)
         logging.warning("RESULT: %s", res_json)
         assert res.status_code == 200
         assert res_json["username"] == data["username"]
         assert res_json["password"] == hashlib.md5(data["password"].encode()).hexdigest()
         assert res_json["status"] == data["status"]
-    def test_admin_put_username_already_exists(self, user):
+    def test_admin_put_by_user_id_but_username_already_exists(self, user):
         token = create_token(is_admin=True)
-        data = {"username": "user2", "password": "W@wew123", "status":True}
-        res = user.put("/admin/1", json=data, headers={"Authorization": "Bearer "+token})
+        data = {"username": "user1", "password": "W@wew123", "status":True}
+        res = user.put("/admin/2", json=data, headers={"Authorization": "Bearer "+token})
         res_json = json.loads(res.data)
         logging.warning("RESULT: %s", res_json)
         assert res.status_code == 400
         assert res_json["status"] == "FAILED"
         assert res_json["message"] == "Username already exists"
-        
-    # def test_user_put_invalid_username(self, user):
-    #     token = create_token(is_admin=False)
-    #     data = {"username": "user2", "password": "W@wew123"}
-    #     res = user.put("/user", json=data, headers={"Authorization": "Bearer "+token})
-    #     res_json = json.loads(res.data)
-    #     logging.warning("RESULT: %s", res_json)
-    #     assert res.status_code == 400
-    #     assert res_json["message"] == "Username already exists"
-    #     assert res_json["status"] == "FAILED"
-    # def test_user_put_invalid_password_length(self, user):
-    #     token = create_token(is_admin=False)
-    #     data = {"username": "user1", "password": "W@w3w"}
-    #     res = user.put("/user", json=data, headers={"Authorization": "Bearer "+token})
-    #     res_json = json.loads(res.data)
-    #     logging.warning("RESULT: %s", res_json)
-    #     assert res.status_code == 400
-    #     assert res_json["message"] == "Password is not accepted"
-    #     assert res_json["status"] == "FAILED"
-    # def test_user_put_invalid_password_numeric(self, user):
-    #     token = create_token(is_admin=False)
-    #     data = {"username": "user1", "password": "W@wewewewew"}
-    #     res = user.put("/user", json=data, headers={"Authorization": "Bearer "+token})
-    #     res_json = json.loads(res.data)
-    #     logging.warning("RESULT: %s", res_json)
-    #     assert res.status_code == 400
-    #     assert res_json["message"] == "Password is not accepted"
-    #     assert res_json["status"] == "FAILED"
-    # def test_user_put_invalid_password_special(self, user):
-    #     token = create_token(is_admin=False)
-    #     data = {"username": "user1", "password": "Waw3w123"}
-    #     res = user.put("/user", json=data, headers={"Authorization": "Bearer "+token})
-    #     res_json = json.loads(res.data)
-    #     logging.warning("RESULT: %s", res_json)
-    #     assert res.status_code == 400
-    #     assert res_json["message"] == "Password is not accepted"
-    #     assert res_json["status"] == "FAILED"
+    def test_admin_put_by_user_id_but_not_found(self, user):
+        token = create_token(is_admin=True)
+        data = {"username": "user2", "password": "W@wew123", "status":True}
+        res = user.put("/admin/100", json=data, headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 404
+        assert res_json["message"] == "ID is not found"
+    def test_admin_put_by_user_id_but_invalid_password_length(self, user):
+        token = create_token(is_admin=True)
+        data = {"username": "user1", "password": "W@wew", "status":True}
+        res = user.put("/admin/1", json=data, headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 400
+        assert res_json["status"] == "FAILED"
+        assert res_json["message"] == "Password is not accepted"
+    def test_admin_put_by_user_id_but_invalid_password_uppercase(self, user):
+        token = create_token(is_admin=True)
+        data = {"username": "user1", "password": "w@wew123", "status":True}
+        res = user.put("/admin/1", json=data, headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 400
+        assert res_json["status"] == "FAILED"
+        assert res_json["message"] == "Password is not accepted"
+    def test_admin_put_by_user_id_but_invalid_password_numeric(self, user):
+        token = create_token(is_admin=True)
+        data = {"username": "user1", "password": "W@wewewewew", "status":True}
+        res = user.put("/admin/1", json=data, headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 400
+        assert res_json["status"] == "FAILED"
+        assert res_json["message"] == "Password is not accepted"
+    def test_admin_put_by_user_id_but_invalid_password_special(self, user):
+        token = create_token(is_admin=True)
+        data = {"username": "user1", "password": "Wawew123", "status":True}
+        res = user.put("/admin/1", json=data, headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 400
+        assert res_json["status"] == "FAILED"
+        assert res_json["message"] == "Password is not accepted"
 
     # # DELETE METHOD
     # def test_user_delete(self, user):
@@ -158,13 +165,12 @@ class TestAdminCRUD():
     #     assert res_json["message"] == "Succesfully deleted"
     
 
-    # # USER
-    # def test_user_access_to_admin_get(self, user):
-    #     token = create_token(is_admin=False)
-    #     data = {}
-    #     res = user.get("/admin", query_string=data, headers={"Authorization": "Bearer "+token})
-    #     res_json = json.loads(res.data)
-    #     logging.warning("RESULT: %s", res_json)
-    #     assert res.status_code == 403
-    #     assert res_json["status"] == "FORBIDDEN"
-    #     assert res_json["message"] == "You should be a user to access this point"
+    # USER
+    def test_user_access_to_admin_get(self, user):
+        token = create_token(is_admin=False)
+        res = user.get("/admin", headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 403
+        assert res_json["status"] == "FORBIDDEN"
+        assert res_json["message"] == "You should be an admin to access this point"
