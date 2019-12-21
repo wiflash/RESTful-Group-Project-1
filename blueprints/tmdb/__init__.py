@@ -1,8 +1,9 @@
 import requests
 from flask import Blueprint
 from flask_restful import Api, Resource, reqparse, marshal
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_claims
 import json
+from blueprints import db, admin_required, nonadmin_required
 from blueprints import db, app
 bp_tmdb = Blueprint('tmdb', __name__)
 api = Api(bp_tmdb)
@@ -11,7 +12,8 @@ class PublicGetTMDB(Resource):
     host = 'https://api.themoviedb.org/3'
     api_key = 'df1a34ae3c1705433378bc967b244227'
 
-    # @jwt_required
+    @jwt_required
+    @admin_required
     def get(self, movie_id):
 
         rq = requests.get(self.host + '/movie/' + str(movie_id), params={'api_key':self.api_key})
@@ -29,7 +31,6 @@ class PublicGetTMDB(Resource):
                 'movie_id': movie['id'],
                 'judul': movie['title'],
                 'sinopsis': movie['overview'],
-                # 'genres': movie['genres'],
                 'genres': nama_genre,
                 'tanggal_rilis': movie['release_date'],
                 'status_rilis': movie['status'],
@@ -43,16 +44,18 @@ class PublicGetUpcoming(Resource):
     host = 'https://api.themoviedb.org/3'
     api_key = 'df1a34ae3c1705433378bc967b244227'
 
-    # @jwt_required
     def get(self):
-
-        rq = requests.get(self.host + '/movie/upcoming', params={'api_key':self.api_key})
 
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
         parser.add_argument('rp', type=int, location='args', default=10)
+        parser.add_argument('region', type=str, location='args')
         args = parser.parse_args()
         offset = (args['p'] * args['rp']) - args['rp']
+
+        rq = requests.get(self.host + '/movie/upcoming',
+                params={'api_key':self.api_key,
+                        'region':args['region']})
 
         movie = rq.json()
         movie = movie['results']
@@ -79,22 +82,26 @@ class PublicGetUpcoming(Resource):
         rows = []
         for i in range(0, args['rp']):
             rows.append(movies[i+offset])
+            if i == len(movie)-1:
+                break
         return rows, 200
             
 class PublicGetNowplaying(Resource):
     host = 'https://api.themoviedb.org/3'
     api_key = 'df1a34ae3c1705433378bc967b244227'
 
-    # @jwt_required
     def get(self):
-
-        rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key})
 
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
         parser.add_argument('rp', type=int, location='args', default=10)
+        parser.add_argument('region', type=str, location='args')
         args = parser.parse_args()
         offset = (args['p'] * args['rp']) - args['rp']
+
+        rq = requests.get(self.host + '/movie/now_playing',
+                params={'api_key':self.api_key,
+                        'region':args['region']})
 
         movie = rq.json()
         movie = movie['results']
@@ -121,6 +128,8 @@ class PublicGetNowplaying(Resource):
         rows = []
         for i in range(0, args['rp']):
             rows.append(movies[i+offset])
+            if i == len(movie)-1:
+                break
         return rows, 200            
         
 api.add_resource(PublicGetTMDB, '/<int:movie_id>')
