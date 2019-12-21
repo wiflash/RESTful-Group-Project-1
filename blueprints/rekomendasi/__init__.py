@@ -19,7 +19,7 @@ class RekomendasiResource(Resource):
         args = parser.parse_args()
 
         #request api tmdb
-        rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key})
+        rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key, 'region':'ID'})
 
         movie = rq.json()
         movie = movie['results']
@@ -43,15 +43,18 @@ class RekomendasiResource(Resource):
             }
             if args['genre'] in hasil['genres']:
                 movies.append(hasil)
-
+ 
         #request api geolocode.xyz
         rq = requests.get(self.geocode_host, params={
             'scantext':args['lokasi'],
             'geoit':'json'})
 
         georq = rq.json()
-        lon = georq['longt']
-        lat = georq['latt']
+        if georq['matches'] is not None:
+            lon = georq['longt']
+            lat = georq['latt']
+        else:
+            return {'message':'Location Unknown'}, 404
 
         #request api foursquare
         rq = requests.get(self.foursquare_host, params={
@@ -73,11 +76,17 @@ class RekomendasiResource(Resource):
                 'distance':venue['location']['distance']
             }
             listfs.append(place)
-
-        return {
-            'rekomendasi film': movies,
-            'rekomendasi tempat nonton': listfs
-        }
+        
+        if (movies == []) or (listfs == []):
+            if movies == []:
+                return {'message': 'Sorry, movie with genre '+args['genre']+' not available now'}, 200
+            else:
+                return {'message': "Sorry, there's no movie theater recommendation near your area"}, 200
+        else:
+            return {
+                'rekomendasi film': movies,
+                'rekomendasi tempat nonton': listfs
+            }, 200
 
 
 api.add_resource(RekomendasiResource,'')
