@@ -132,7 +132,6 @@ class UserResources(Resource):
         if validation == []:
             pwd_digest = hashlib.md5(args["password"].encode()).hexdigest()
             if Users.query.get(user_claims_data["id"]).username != args["username"]:
-                print("MASSOK")
                 if Users.query.filter_by(username=args["username"]).first() is not None:
                     return {"status": "FAILED", "message": "Username already exists"}, 400, {"Content-Type": "application/json"}
             qry.username = args["username"]

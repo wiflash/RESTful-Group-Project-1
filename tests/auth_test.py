@@ -3,8 +3,8 @@ from . import reset_db, user
 from password_strength import PasswordPolicy
 
 class TestAuthCrud():
-    reset_db()
     def test_invalid_user(self, user):
+        reset_db()
         data = {"username": "wawawaw", "password": "W@wew123"}
         res = user.get("/login", query_string=data)
         res_json = json.loads(res.data)
