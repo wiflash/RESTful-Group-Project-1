@@ -18,8 +18,8 @@ class Watchlists(db.Model):
         "movie_id": fields.Integer
     }
 
-    def __init__(self, user_id, movie_id:
-        self.user_id = user_id
+    def __init__(self, user_id, movie_id):
+        self.user_id = user_id,
         self.movie_id = movie_id
 
     def __repr__(self):
