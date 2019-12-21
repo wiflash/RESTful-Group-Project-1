@@ -3,7 +3,6 @@ from flask import Blueprint
 from flask_restful import Api, Resource, reqparse, marshal
 from flask_jwt_extended import jwt_required
 import json
-from .model import Movies
 from blueprints import db, app
 bp_tmdb = Blueprint('tmdb', __name__)
 api = Api(bp_tmdb)
