@@ -62,16 +62,55 @@ class TestAdminCRUD():
         assert res_json["status"] == "FAILED"
         assert res_json["message"] == "Password is not accepted"
     
-    # # GET METHOD
-    # def test_user_get(self, user):
-    #     token = create_token(is_admin=False)
-    #     data = {}
-    #     res = user.get("/user", query_string=data, headers={"Authorization": "Bearer "+token})
-    #     res_json = json.loads(res.data)
-    #     logging.warning("RESULT: %s", res_json)
-    #     assert res.status_code == 200
+    # GET METHOD
+    def test_admin_get_all_users(self, user):
+        token = create_token(is_admin=True)
+        res = user.get("/admin", headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 200
+    def test_admin_get_all_users_filtered(self, user):
+        token = create_token(is_admin=True)
+        data = {"p": 1, "rp": 10, "status": True}
+        res = user.get("/admin", query_string=data, headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 200
+    def test_admin_get_user_by_id(self, user):
+        token = create_token(is_admin=True)
+        res = user.get("/admin/1", headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 200
+    def test_admin_get_user_by_id_but_doesnt_exist(self, user):
+        token = create_token(is_admin=True)
+        res = user.get("/admin/100", headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 404
+        assert res_json["message"] == "ID is not found"
     
-    # # PUT METHOD
+    # PUT METHOD
+    def test_admin_put(self, user):
+        token = create_token(is_admin=True)
+        data = {"username": "user1 (edited)", "password": "W@wew123", "status":True}
+        res = user.put("/admin/1", json=data, headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 200
+        assert res_json["username"] == data["username"]
+        assert res_json["password"] == hashlib.md5(data["password"].encode()).hexdigest()
+        assert res_json["status"] == data["status"]
+    def test_admin_put_username_already_exists(self, user):
+        token = create_token(is_admin=True)
+        data = {"username": "user2", "password": "W@wew123", "status":True}
+        res = user.put("/admin/1", json=data, headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 400
+        assert res_json["status"] == "FAILED"
+        assert res_json["message"] == "Username already exists"
+        
     # def test_user_put_invalid_username(self, user):
     #     token = create_token(is_admin=False)
     #     data = {"username": "user2", "password": "W@wew123"}

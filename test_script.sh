@@ -8,7 +8,5 @@ export THIS_DB_TEST="restful_group_project_test" # ganti ke nama database yang d
 export THIS_DB_DEV="restful_group_project" # ganti ke nama database yang dipake untuk development
 
 export FLASK_ENV=testing
-pytest --cov-fail-under=80 --cov=blueprints --cov-report html -s
-# pytest --cov-fail-under=80 --cov=blueprints --cov-report html -s tests/admin_crud_test.py
-# pytest --cov-fail-under=80 --cov=blueprints --cov-report html -s tests/user_rud_test.py
+pytest --cov-fail-under=96 --cov=blueprints --cov-report html -s tests/
 export FLASK_ENV=development
