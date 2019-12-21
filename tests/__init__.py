@@ -2,7 +2,7 @@ import pytest, logging, hashlib, json
 from flask import Flask, request
 from app import cache
 from blueprints import app, db
-from blueprints.user.model import *
+from blueprints.user.model import Users
 
 
 def call_user(request):
@@ -51,7 +51,7 @@ def create_token(is_admin=True):
         logging.warning("RESULT: %s", res_json)
         # compare with expected result
         assert res.status_code == 200
-        # assert res_json["message"] == "token created"
+        assert res_json["message"] == "Token is successfully created"
         # save token into cache
         cache.set(cache_user, res_json["token"], timeout=30)
         # return
