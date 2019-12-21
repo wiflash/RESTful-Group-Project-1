@@ -1,85 +1,94 @@
 from flask import Flask, request
-from flask_restful import Resource, Api
-
+from flask_restful import Resource, Api, reqparse
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
-
-import json, logging, os
-from logging.handlers import RotatingFileHandler
-
 from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_claims
 from datetime import timedelta
 from functools import wraps
+import json, random, string, os
 
-app = Flask(__name__)
 
-app.config['APP_DEBUG'] = True
+app = Flask(__name__) # membuat semua blueprint
+app.config["APP_DEBUG"] = True
 
-#JWT Config
-app.config['JWT_SECRET_KEY'] = 'YoyoayoYoayoyoYoayoYoaYoYoAyoAyo'
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
+uname = os.environ["THIS_UNAME"]
+pwd = os.environ["THIS_PWD"]
+db_test = os.environ["THIS_DB_TEST"]
+db_dev = os.environ["THIS_DB_DEV"]
 
-jwt = JWTManager(app)
-
-def internal_required(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        verify_jwt_in_request()
-        claims = get_jwt_claims()
-        if claims['status'] == 0: #non-internal statusnya false (0), internal statusnya true (1)
-            return{'status':'FORBIDDEN', 'message':'Internal Only'}, 403
-        else:
-            return fn(*args, **kwargs)
-    return wrapper
-
-# SQLAlchemy Config
 try:
-    env = os.environ.get('FLASK_ENV', 'development')
-    if env == 'testing':
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1/rest_training_test'
+    env = os.environ.get("FLASK_ENV", "development")
+    if env == "testing":
+        app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{uname}:{pwd}@localhost:3306/{db_test}".format(uname=uname, pwd=pwd, db_test=db_test)
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1/rest_training'
-except Exception as e:
-    raise e
+        app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{uname}:{pwd}@localhost:3306/{db_dev}".format(uname=uname, pwd=pwd, db_dev=db_dev)
+except Exception as error:
+    raise error
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1/rest_training'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["JWT_SECRET_KEY"] = "".join(random.choice(string.ascii_letters) for i in range(32))
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=30)
+
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
+jwt = JWTManager(app)
 
-#after request
+
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        if not claims["is_admin"]:
+            return {"status": "FORBIDDEN", "message": "You should be an admin to access this point"}, 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+def nonadmin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        verify_jwt_in_request()
+        claims = get_jwt_claims()
+        if claims["is_admin"]:
+            return {"status": "FORBIDDEN", "message": "You should be a user to access this point"}, 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+
 @app.after_request
 def after_request(response):
     try:
-        requestData = request.get_json()
-    except Exception as e:
-        requestData = request.args.to_dict()
+        request_data = request.get_json()
+    except:
+        request_data = request.args.to_dict()
     if response.status_code == 200:
-        app.logger.info("REQUEST_LOG\t%s",
-    json.dumps({
-        'status_code': response.status_code,
-        'method': request.method,
-        'code': response.status,
-        'uri': request.full_path,
-        'request':requestData,
-        'response': json.loads(response.data.decode('utf-8')) }))
-    else: #untuk error 400, 404, dll
-        app.logger.error("REQUEST_LOG\t%s",
-    json.dumps({
-        'status_code': response.status_code,
-        'method': request.method,
-        'code': response.status,
-        'uri': request.full_path,
-        'request':requestData,
-        'response':json.loads(response.data.decode('utf-8')) }))
+        app.logger.info("REQUEST_LOG\t%s", json.dumps({
+            "method": request.method,
+            "code": response.status,
+            "request": request_data,
+            "response": json.loads(response.data.decode("utf-8"))
+        }))
+    else:
+        app.logger.error("REQUEST_LOG\t%s", json.dumps({
+            "method": request.method,
+            "code": response.status,
+            "request": request_data,
+            "response": json.loads(response.data.decode("utf-8"))
+        }))
     return response
 
-#Import Blueprint & Routes
+
+from blueprints.auth import blueprint_auth
+from blueprints.user.resources import *
 from blueprints.rekomendasi import bp_rekomendasi
+
+app.register_blueprint(blueprint_auth, url_prefix="/login")
+app.register_blueprint(blueprint_admin, url_prefix="/admin")
+app.register_blueprint(blueprint_user, url_prefix="/user")
 app.register_blueprint(bp_rekomendasi, url_prefix='/rekomendasi')
 
 db.create_all()
