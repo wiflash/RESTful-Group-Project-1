@@ -155,14 +155,28 @@ class TestAdminCRUD():
         assert res_json["status"] == "FAILED"
         assert res_json["message"] == "Password is not accepted"
 
-    # # DELETE METHOD
-    # def test_user_delete(self, user):
-    #     token = create_token(is_admin=False)
-    #     res = user.delete("/user", headers={"Authorization": "Bearer "+token})
-    #     res_json = json.loads(res.data)
-    #     logging.warning("RESULT: %s", res_json)
-    #     assert res.status_code == 200
-    #     assert res_json["message"] == "Succesfully deleted"
+    # DELETE METHOD
+    def test_admin_delete_by_user_id(self, user):
+        token = create_token(is_admin=True)
+        res = user.delete("/admin/2", headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 200
+        assert res_json["message"] == "Succesfully deleted"
+    def test_admin_delete_but_no_user_id_path(self, user):
+        token = create_token(is_admin=True)
+        res = user.delete("/admin", headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 404
+        assert res_json["message"] == "ID is not found"
+    def test_admin_delete_by_user_id_but_not_found(self, user):
+        token = create_token(is_admin=True)
+        res = user.delete("/admin/100", headers={"Authorization": "Bearer "+token})
+        res_json = json.loads(res.data)
+        logging.warning("RESULT: %s", res_json)
+        assert res.status_code == 404
+        assert res_json["message"] == "ID is not found"
     
 
     # USER
