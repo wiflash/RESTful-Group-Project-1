@@ -47,6 +47,5 @@ class RekomendasiResource(Resource):
             'rekomendasi tempat nonton': listfs
         }
 
-        # return fsrq
 
 api.add_resource(RekomendasiResource,'')
