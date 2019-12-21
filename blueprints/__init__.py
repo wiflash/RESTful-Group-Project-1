@@ -8,7 +8,6 @@ from datetime import timedelta
 from functools import wraps
 import json, random, string, os
 
-
 app = Flask(__name__) # membuat semua blueprint
 app.config["APP_DEBUG"] = True
 
@@ -84,9 +83,15 @@ def after_request(response):
 
 from blueprints.auth import blueprint_auth
 from blueprints.user.resources import *
+from blueprints.rekomendasi import bp_rekomendasi
+from blueprints.tmdb import bp_tmdb
+from blueprints.watchlist.resource import blueprint_watchlist
 
 app.register_blueprint(blueprint_auth, url_prefix="/login")
 app.register_blueprint(blueprint_admin, url_prefix="/admin")
 app.register_blueprint(blueprint_user, url_prefix="/user")
+app.register_blueprint(bp_rekomendasi, url_prefix='/rekomendasi')
+app.register_blueprint(bp_tmdb, url_prefix='/tmdb')
+app.register_blueprint(blueprint_watchlist, url_prefix='/watchlist')
 
 db.create_all()
