@@ -1,5 +1,7 @@
 from flask import Blueprint
 from flask_restful import Api, Resource, reqparse, marshal
+from flask_jwt_extended import jwt_required, get_jwt_claims
+from blueprints import db, admin_required, nonadmin_required
 import requests
 
 bp_rekomendasi = Blueprint('rekomendasi', __name__)
@@ -12,6 +14,8 @@ class RekomendasiResource(Resource):
     host = 'https://api.themoviedb.org/3'
     api_key = 'df1a34ae3c1705433378bc967b244227'
 
+    @jwt_required
+    @nonadmin_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('genre', location='args', default=None, required=True)
@@ -19,7 +23,7 @@ class RekomendasiResource(Resource):
         args = parser.parse_args()
 
         #request api tmdb
-        rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key, 'region':'ID'})
+        rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key})
 
         movie = rq.json()
         movie = movie['results']
@@ -62,7 +66,7 @@ class RekomendasiResource(Resource):
             'client_secret':'IPX1CYTP32FG0A5NWQKAMIKQPUDDI3KVL103YA04OX5JCV1M', 
             'v':'20191221',
             'll':str(lat)+','+str(lon),
-            'near':args['lokasi'],
+            'radius':5000,
             'categoryId':'4bf58dd8d48988d17f941735',
             'limit':3
             })
