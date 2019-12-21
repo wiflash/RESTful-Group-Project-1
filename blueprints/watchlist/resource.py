@@ -89,10 +89,6 @@ class WatchlistsResources(Resource):
         claims = get_jwt_claims()
         user_id = claims['id']
         data = Watchlists.query.filter_by(user_id = user_id)
-
-        if data is None:
-            return {'status':'NOT_FOUND'}, 404
-
         qry = data.filter_by(movie_id = args['movie_id']).first()
 
         if qry is None:
