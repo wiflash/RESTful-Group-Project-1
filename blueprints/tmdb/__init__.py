@@ -16,21 +16,28 @@ class PublicGetTMDB(Resource):
 
         rq = requests.get(self.host + '/movie/' + str(movie_id), params={'api_key':self.api_key})
         movie = rq.json()
-        nama_genre=[]
-        genre = movie['genres']
-        for i in genre:
-            nama_genre.append(i['name'])
-        return{
-            'movie_id': movie['id'],
-            'judul': movie['title'],
-            'sinopsis': movie['overview'],
-            # 'genres': movie['genres'],
-            'genres': nama_genre,
-            'tanggal_rilis': movie['release_date'],
-            'status_rilis': movie['status'],
-            'durasi': movie['runtime'],
-            'rating': movie['vote_average']
-        }
+
+        if "status_code" in movie:
+            return {'message': "ID MOVIE NOT FOUND"}, 404
+        else:
+            nama_genre=[]
+            genre = movie['genres']
+            for i in genre:
+                nama_genre.append(i['name'])
+
+            hasil = {
+                'movie_id': movie['id'],
+                'judul': movie['title'],
+                'sinopsis': movie['overview'],
+                # 'genres': movie['genres'],
+                'genres': nama_genre,
+                'tanggal_rilis': movie['release_date'],
+                'status_rilis': movie['status'],
+                'durasi': movie['runtime'],
+                'rating': movie['vote_average']
+            }
+            return hasil, 200
+            
 
 class PublicGetUpcoming(Resource):
     host = 'https://api.themoviedb.org/3'
@@ -69,7 +76,10 @@ class PublicGetUpcoming(Resource):
             }
             movies.append(hasil)
 
-        return movies, 200
+        rows = []
+        for i in range(0, args['rp']):
+            rows.append(movies[i+offset])
+        return rows, 200
             
 class PublicGetNowplaying(Resource):
     host = 'https://api.themoviedb.org/3'
@@ -108,7 +118,10 @@ class PublicGetNowplaying(Resource):
             }
             movies.append(hasil)
 
-        return movies, 200            
+        rows = []
+        for i in range(0, args['rp']):
+            rows.append(movies[i+offset])
+        return rows, 200            
         
 api.add_resource(PublicGetTMDB, '/<int:movie_id>')
 api.add_resource(PublicGetUpcoming, '/upcoming')
