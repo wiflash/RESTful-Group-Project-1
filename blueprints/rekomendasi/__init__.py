@@ -2,12 +2,13 @@ from flask import Blueprint
 from flask_restful import Api, Resource, reqparse, marshal
 import requests
 
-bp_rekomendasi = Blueprint('rekomendasi', __name__)
-api = Api(bp_rekomendasi)
+blueprint_rekomendasi = Blueprint('rekomendasi', __name__)
+api = Api(blueprint_rekomendasi)
 
 class RekomendasiResource(Resource):
     geocode_host = 'https://geocode.xyz'
     foursquare_host = 'https://api.foursquare.com/v2/venues/search'
+    tmdb_host = 'https://api.themoviedb.org/3/'
 
     def get(self):
         parser = reqparse.RequestParser()
@@ -15,6 +16,9 @@ class RekomendasiResource(Resource):
         parser.add_argument('lokasi', location='args', default=None, required=True)
         args = parser.parse_args()
 
+        #request api tmdb
+
+        #request api geolocode.xyz
         rq = requests.get(self.geocode_host, params={
             'scantext':args['lokasi'],
             'geoit':'json'})
@@ -23,6 +27,7 @@ class RekomendasiResource(Resource):
         lon = georq['longt']
         lat = georq['latt']
 
+        #request api foursquare
         rq = requests.get(self.foursquare_host, params={
             'client_id':'QJKKM3AWZP0R1GYQXOPDOXXDAH4M43R5Z0TJ2AWY4EQR4UVZ', 
             'client_secret':'IPX1CYTP32FG0A5NWQKAMIKQPUDDI3KVL103YA04OX5JCV1M', 
