@@ -22,7 +22,7 @@ class CreateTokenResources(Resource):
             qry = qry.filter_by(password=password)
             qry = qry.filter_by(status=True).first()
             if qry is None:
-                return {"is_admin": "UNAUTHORIZED", "message": "Invalid username or password"}, 401, {"Content-Type": "application/json"}
+                return {"status": "UNAUTHORIZED", "message": "Invalid username or password"}, 401, {"Content-Type": "application/json"}
             user_claims_data = marshal(qry, Users.jwt_claim_fields)
             user_claims_data["is_admin"] = False
         token = create_access_token(identity=args["username"], user_claims=user_claims_data)
