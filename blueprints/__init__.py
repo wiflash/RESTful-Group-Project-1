@@ -16,15 +16,15 @@ app.config["APP_DEBUG"] = True
 # db_test = os.environ["THIS_DB_TEST"]
 # db_dev = os.environ["THIS_DB_DEV"]
 
-uname = "root"
-pwd = ""
+uname = "be126deacdc2df"
+pwd = "26218d94"
 db_test = "restful_group_project_test"
-db_dev = "restful_group_project"
+db_dev = "heroku_2fa05149aac1e32"
 
 try:
     env = os.environ.get("FLASK_ENV", "development")
     if env == "testing":
-        app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{uname}:{pwd}@localhost:3306/{db_test}".format(uname=uname, pwd=pwd, db_test=db_test)
+        app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{uname}:{pwd}@eu-cdbr-west-02.cleardb.net/{db_test}".format(uname=uname, pwd=pwd, db_test=db_test)
     else:
         app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{uname}:{pwd}@localhost:3306/{db_dev}".format(uname=uname, pwd=pwd, db_dev=db_dev)
 except Exception as error:
