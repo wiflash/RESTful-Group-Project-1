@@ -63,10 +63,10 @@ class TestInvalidTMDB():
 
 
 class TestNowplaying():
-    def __init__(self):
-        self.selection = "now_playing"
-
+    local_api_path = "nowplaying"
+    
     def mocked_requests_get(*args, **kwargs):
+        api_path = "now_playing"
         class MockResponse:
             def __init__(self, json_data, status_code):
                 self.json_data = json_data
@@ -74,7 +74,7 @@ class TestNowplaying():
             def json(self):
                 return self.json_data
         if len(args)>0:
-            if args[0] == "https://api.themoviedb.org/3/movie/{}".format(self.selection):
+            if args[0] == "https://api.themoviedb.org/3/movie/{}".format(api_path):
                 return MockResponse({"results":
                     [{
                         "id": 181812,
@@ -111,11 +111,12 @@ class TestNowplaying():
             'p':1,
             'region':'US'
         }
-        res = user.get('/tmdb/nowplaying', query_string=data)
+        res = user.get('/tmdb/{}'.format(self.local_api_path), query_string=data)
         assert res.status_code == 200
 
 
 class TestUpcoming(TestNowplaying):
-    def __init__(self):
-        super().__init__()
-        self.selection = "upcoming"
+    local_api_path = "nowplaying"
+    def mocked_requests_get(*args, **kwargs):
+        super().mocked_requests_get()
+        api_path = "upcoming"
