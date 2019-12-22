@@ -62,6 +62,9 @@ def nonadmin_required(fn):
         return fn(*args, **kwargs)
     return wrapper
 
+@app.route("/")
+def home():
+    return "<h1>Deploy success.</h1>"
 
 @app.after_request
 def after_request(response):
