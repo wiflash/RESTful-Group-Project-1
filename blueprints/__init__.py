@@ -11,10 +11,15 @@ import json, random, string, os
 app = Flask(__name__) # membuat semua blueprint
 app.config["APP_DEBUG"] = True
 
-uname = os.environ["THIS_UNAME"]
-pwd = os.environ["THIS_PWD"]
-db_test = os.environ["THIS_DB_TEST"]
-db_dev = os.environ["THIS_DB_DEV"]
+# uname = os.environ["THIS_UNAME"]
+# pwd = os.environ["THIS_PWD"]
+# db_test = os.environ["THIS_DB_TEST"]
+# db_dev = os.environ["THIS_DB_DEV"]
+
+uname = "root"
+pwd = ""
+db_test = "restful_group_project_test"
+db_dev = "restful_group_project"
 
 try:
     env = os.environ.get("FLASK_ENV", "development")
