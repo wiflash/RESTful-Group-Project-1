@@ -92,6 +92,6 @@ app.register_blueprint(blueprint_admin, url_prefix="/admin")
 app.register_blueprint(blueprint_user, url_prefix="/user")
 app.register_blueprint(bp_rekomendasi, url_prefix='/user/rekomendasi')
 app.register_blueprint(bp_tmdb, url_prefix='/tmdb')
-app.register_blueprint(blueprint_watchlist, url_prefix='/watchlist')
+app.register_blueprint(blueprint_watchlist, url_prefix='/user/watchlist')
 
 db.create_all()

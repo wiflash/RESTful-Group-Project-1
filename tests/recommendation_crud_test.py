@@ -84,7 +84,8 @@ class TestRecommendationCrud():
         #case1: get valid
         data = {
             "genre":"Drama",
-            "lokasi":"malang,ID"
+            "lokasi":"malang,ID",
+            "page":1
         }
 
         res = user.get('/user/rekomendasi', query_string=data,
@@ -96,7 +97,8 @@ class TestRecommendationCrud():
         #case2: location unknown
         data = {
             "genre":"Drama",
-            "lokasi":"bojongsoang"
+            "lokasi":"bojongsoang",
+            "page":1
         }
 
         res = user.get('/user/rekomendasi', query_string=data,
@@ -108,7 +110,8 @@ class TestRecommendationCrud():
         #case3: movie not available
         data = {
             "genre":"Action",
-            "lokasi":"malang,ID"
+            "lokasi":"malang,ID",
+            "page":1
         }
 
         res = user.get('/user/rekomendasi', query_string=data,
@@ -121,7 +124,8 @@ class TestRecommendationCrud():
         #case4: theater not available
         data = {
             "genre":"Drama",
-            "lokasi":"papua"
+            "lokasi":"papua",
+            "page":1
         }
 
         res = user.get('/user/rekomendasi', query_string=data,
@@ -133,7 +137,8 @@ class TestRecommendationCrud():
         #case5: spesific region and non genre
         data = {
             "lokasi":"malang,ID",
-            "region":"ID"
+            "region":"ID",
+            "page":1
         }
 
         res = user.get('/user/rekomendasi', query_string=data,
@@ -141,16 +146,3 @@ class TestRecommendationCrud():
         )
 
         assert res.status_code == 200
-
-        #case6: page out of number
-        data = {
-            "genre":"Action",
-            "lokasi":"malang",
-            "p":2
-        }
-
-        res = user.get('/user/rekomendasi', query_string=data,
-            headers={'Authorization':'Bearer '+token}
-        )
-
-        assert res.status_code == 400

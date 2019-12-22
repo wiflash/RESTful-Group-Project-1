@@ -19,19 +19,13 @@ class RekomendasiResource(Resource):
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('p', type=int, location='args', default=1)
-        parser.add_argument('rp', type=int, location='args', default=5)
         parser.add_argument('genre', location='args', default=None)
-        parser.add_argument('lokasi', location='args', default=None)
-        parser.add_argument('region', location='args', default=None)
+        parser.add_argument('lokasi', location='args', default='Jakarta,ID')
+        parser.add_argument('region', location='args', default='ID')
         args = parser.parse_args()
-
-        offset = (args['p'] * args['rp']) - args['rp']
         
         #request api tmdb
-        if args['region'] is not None:
-            rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key, 'region':args['region']})            
-        else:
-            rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key})
+        rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key, 'region':args['region'], 'page':args['p']})            
 
         movie = rq.json()
         movie = movie['results']
@@ -59,10 +53,6 @@ class RekomendasiResource(Resource):
             else:
                 movies.append(hasil)
 
-        total_page = int(len(movies)/args['rp'])+1
-        if args['p'] > total_page:
-            return {'status':'Page Out of Number'}, 400
-            
         #request api geolocode.xyz
         rq = requests.get(self.geocode_host, params={
             'scantext':args['lokasi'],
@@ -101,16 +91,9 @@ class RekomendasiResource(Resource):
                 return {'message': 'Sorry, movie with this genre not available now'}, 404
             else:
                 return {'message': "Sorry, there's no movie theater recommendation near your area"}, 404
-        else:
-            row = []
-            for i in range(args['rp']):
-                if i == len(movies):
-                    break
-                else:
-                    row.append(movies[offset+i])
-                
+        else:                
             return {
-                'rekomendasi film': row,
+                'rekomendasi film': movies,
                 'rekomendasi tempat nonton': listfs
             }, 200
 

@@ -20,7 +20,8 @@ class WatchlistsResources(Resource):
     def get(self):
         parser =reqparse.RequestParser()
         parser.add_argument("p", type=int, location="args", default=1)
-        parser.add_argument("rp", type=int, location="args", default=25)
+        parser.add_argument("rp", type=int, location="args", default=5)
+        parser.add_argument('genre', location='args', default=None)
         args = parser.parse_args()
 
         claims = get_jwt_claims()
@@ -30,28 +31,29 @@ class WatchlistsResources(Resource):
         for qry in data.all():
 
             rq = requests.get(self.host + '/movie/' + str(qry.movie_id), params={
-                'api_key':self.api_key
+                'api_key':self.api_key,
                 })
             movie = rq.json()
 
-            if "status_code" in movie:
-                return {'message': "ID MOVIE NOT FOUND"}, 404
-            else:
-                nama_genre=[]
-                genre = movie['genres']
-                for i in genre:
-                    nama_genre.append(i['name'])
+            nama_genre=[]
+            genre = movie['genres']
+            for i in genre:
+                nama_genre.append(i['name'])
 
-                hasil = {
-                    'movie_id': movie['id'],
-                    'judul': movie['title'],
-                    'sinopsis': movie['overview'],
-                    'genres': nama_genre,
-                    'tanggal_rilis': movie['release_date'],
-                    'status_rilis': movie['status'],
-                    'durasi': movie['runtime'],
-                    'rating': movie['vote_average']
-                }
+            hasil = {
+                'movie_id': movie['id'],
+                'judul': movie['title'],
+                'sinopsis': movie['overview'],
+                'genres': nama_genre,
+                'tanggal_rilis': movie['release_date'],
+                'status_rilis': movie['status'],
+                'durasi': movie['runtime'],
+                'rating': movie['vote_average']
+            }
+            if args['genre'] is not None:
+                if args['genre'] in hasil['genres']:
+                    movies.append(hasil)
+            else:
                 movies.append(hasil)
 
         return movies, 200
