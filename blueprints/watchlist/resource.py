@@ -71,7 +71,6 @@ class WatchlistsResources(Resource):
         if data is not None:
             return {'message':'movie already added in watchlist'}, 400
         else:
-            print("mashok")
             watch = Watchlists(user_id, args['movie_id'])
             db.session.add(watch)
             db.session.commit()
