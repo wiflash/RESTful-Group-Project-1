@@ -18,12 +18,20 @@ class RekomendasiResource(Resource):
     @nonadmin_required
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('genre', location='args', default=None, required=True)
-        parser.add_argument('lokasi', location='args', default=None, required=True)
+        parser.add_argument('p', type=int, location='args', default=1)
+        parser.add_argument('rp', type=int, location='args', default=5)
+        parser.add_argument('genre', location='args', default=None)
+        parser.add_argument('lokasi', location='args', default=None)
+        parser.add_argument('region', location='args', default=None)
         args = parser.parse_args()
 
+        offset = (args['p'] * args['rp']) - args['rp']
+        
         #request api tmdb
-        rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key})
+        if args['region'] is not None:
+            rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key, 'region':args['region']})            
+        else:
+            rq = requests.get(self.host + '/movie/now_playing', params={'api_key':self.api_key})
 
         movie = rq.json()
         movie = movie['results']
@@ -45,9 +53,16 @@ class RekomendasiResource(Resource):
                 'durasi': movie2['runtime'],
                 'rating': i['vote_average']
             }
-            if args['genre'] in hasil['genres']:
+            if args['genre'] is not None:
+                if args['genre'] in hasil['genres']:
+                    movies.append(hasil)
+            else:
                 movies.append(hasil)
- 
+
+        total_page = int(len(movies)/args['rp'])+1
+        if args['p'] > total_page:
+            return {'status':'Page Out of Number'}, 400
+            
         #request api geolocode.xyz
         rq = requests.get(self.geocode_host, params={
             'scantext':args['lokasi'],
@@ -83,12 +98,19 @@ class RekomendasiResource(Resource):
         
         if (movies == []) or (listfs == []):
             if movies == []:
-                return {'message': 'Sorry, movie with genre '+args['genre']+' not available now'}, 404
+                return {'message': 'Sorry, movie with this genre not available now'}, 404
             else:
                 return {'message': "Sorry, there's no movie theater recommendation near your area"}, 404
         else:
+            row = []
+            for i in range(args['rp']):
+                if i == len(movies):
+                    break
+                else:
+                    row.append(movies[offset+i])
+                
             return {
-                'rekomendasi film': movies,
+                'rekomendasi film': row,
                 'rekomendasi tempat nonton': listfs
             }, 200
 

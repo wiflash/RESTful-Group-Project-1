@@ -87,7 +87,7 @@ class TestRecommendationCrud():
             "lokasi":"malang,ID"
         }
 
-        res = user.get('/rekomendasi', query_string=data,
+        res = user.get('/user/rekomendasi', query_string=data,
             headers={'Authorization':'Bearer '+token}
         )
 
@@ -99,7 +99,7 @@ class TestRecommendationCrud():
             "lokasi":"bojongsoang"
         }
 
-        res = user.get('/rekomendasi', query_string=data,
+        res = user.get('/user/rekomendasi', query_string=data,
             headers={'Authorization':'Bearer '+token}
         )
 
@@ -111,7 +111,7 @@ class TestRecommendationCrud():
             "lokasi":"malang,ID"
         }
 
-        res = user.get('/rekomendasi', query_string=data,
+        res = user.get('/user/rekomendasi', query_string=data,
             headers={'Authorization':'Bearer '+token}
         )
 
@@ -124,8 +124,33 @@ class TestRecommendationCrud():
             "lokasi":"papua"
         }
 
-        res = user.get('/rekomendasi', query_string=data,
+        res = user.get('/user/rekomendasi', query_string=data,
             headers={'Authorization':'Bearer '+token}
         )
 
         assert res.status_code == 404
+
+        #case5: spesific region and non genre
+        data = {
+            "lokasi":"malang,ID",
+            "region":"ID"
+        }
+
+        res = user.get('/user/rekomendasi', query_string=data,
+            headers={'Authorization':'Bearer '+token}
+        )
+
+        assert res.status_code == 200
+
+        #case6: page out of number
+        data = {
+            "genre":"Action",
+            "lokasi":"malang",
+            "p":2
+        }
+
+        res = user.get('/user/rekomendasi', query_string=data,
+            headers={'Authorization':'Bearer '+token}
+        )
+
+        assert res.status_code == 400
